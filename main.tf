@@ -11,6 +11,10 @@ terraform {
     aws = {
       source = "hashicorp/aws"
     }
+    tfe = {
+      source  = "hashicorp/tfe"
+      version = ">= 0.42.0"
+    }
   }
 }
 provider "aws" {
@@ -30,5 +34,6 @@ provider "aws" {
 }
 
 provider "tfe" {
-  hostname = var.tfc_hostname
+  hostname     = var.tfc_hostname
+  organization = var.tfc_organization_name
 }

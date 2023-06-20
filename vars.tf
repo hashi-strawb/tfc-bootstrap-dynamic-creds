@@ -4,6 +4,12 @@
 # Bootstrapper
 #
 
+variable "create_aws_oidc_provider" {
+  type = bool
+  default = true
+  description = "Whether to create an OIDC provider in Terraform, or use an existing one"
+}
+
 variable "tfc_aws_audience" {
   type        = string
   default     = "aws.workload.identity"
@@ -34,7 +40,7 @@ variable "tfc_workspace_name" {
 # Workspace Finder
 #
 
-variable "tag_names" {
+variable "aws_tag_names" {
   default = [
     "creds:dynamic-aws",
     "aws-account:sandbox",
