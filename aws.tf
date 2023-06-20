@@ -8,10 +8,12 @@ module "aws-oidc-provider" {
   source = "hashi-strawb/tfc-dynamic-creds-provider/aws"
   create = var.create_aws_oidc_provider
 }
+/*
 moved {
   from = aws_iam_openid_connect_provider.tfc_provider
   to   = module.aws-oidc-provider.aws_iam_openid_connect_provider.tfc_provider[0]
 }
+*/
 
 
 
@@ -37,6 +39,33 @@ output "tagged_workspaces" {
 }
 
 
+
+// Workaround for https://github.com/hashicorp/terraform-provider-tfe/issues/778
+data "environment_variables" "tfe_token" {
+  filter    = "TFE_TOKEN"
+  sensitive = false
+}
+locals {
+  tfe_token = data.environment_variables.tfe_token.items["TFE_TOKEN"]
+}
+data "terracurl_request" "project_name_for_workspace" {
+  for_each = data.tfe_workspace.tagged
+
+  name   = "project_name_for_workspace"
+  url    = "https://app.terraform.io/api/v2/projects/${each.value.project_id}"
+  method = "GET"
+
+  headers = {
+    Authorization = "Bearer ${local.tfe_token}"
+    Content-Type  = "application/vnd.api+json"
+  }
+  response_codes = [200]
+}
+
+
+
+
+
 module "workspace-creds" {
   source  = "hashi-strawb/tfc-dynamic-creds-workspace/aws"
   version = ">= 0.4.0"
@@ -49,12 +78,17 @@ module "workspace-creds" {
   tfc_workspace_name    = each.key
   tfc_workspace_id      = each.value.id
 
-  # TODO: get the project name
+
+  # TODO: get the project name with the tfe provider
   # Relies on https://github.com/hashicorp/terraform-provider-tfe/issues/778
+  tfc_workspace_project_name = jsondecode(
+    data.terracurl_request.project_name_for_workspace[each.key].response
+  ).data.attributes.name
 
   cred_type = "workspace"
 }
 
+/*
 moved {
   from = aws_iam_role.workspace_role["ami-cleanup"]
   to   = module.workspace-creds["ami-cleanup"].aws_iam_role.workspace_role[0]
@@ -81,3 +115,4 @@ moved {
   from = tfe_variable.workspace_tfc_aws_role_arn["bootstrap"]
   to   = module.workspace-creds["bootstrap"].tfe_variable.workspace_tfc_aws_role_arn[0]
 }
+*/

@@ -5,8 +5,8 @@
 #
 
 variable "create_aws_oidc_provider" {
-  type = bool
-  default = true
+  type        = bool
+  default     = true
   description = "Whether to create an OIDC provider in Terraform, or use an existing one"
 }
 

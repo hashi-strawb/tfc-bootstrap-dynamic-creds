@@ -15,6 +15,14 @@ terraform {
       source  = "hashicorp/tfe"
       version = ">= 0.42.0"
     }
+    environment = {
+      source  = "EppO/environment"
+      version = "1.3.4"
+    }
+    terracurl = {
+      source  = "devops-rob/terracurl"
+      version = "1.1.0"
+    }
   }
 }
 provider "aws" {
